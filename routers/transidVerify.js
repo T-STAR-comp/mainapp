@@ -5,7 +5,7 @@ const UpdateDB = require('../Database/db_controllers/dbeventupdate.js');
 
 router.post('/', async (req,res)=>{
     const fetch = (await import('node-fetch')).default;
-    const secretKey = process.env.SECRET_KEY; //process.env.LIVE_SEC_KEY; 
+    const secretKey = process.env.TEST_SECRET_KEY; //process.env.LIVE_SEC_KEY; 
     const {trans_ID} = req.body;
 
     try{
@@ -26,7 +26,6 @@ router.post('/', async (req,res)=>{
                 const amount = data.data.amount;
 
                 const response = await UpdateDB.UpdateDatabase(amount,EventName);
-
                 response === 'ok' ? res.status(200).json({status:'ok'}) : null;
             }
         }

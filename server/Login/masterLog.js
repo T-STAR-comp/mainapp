@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.post('/',async (req,res)=>{
     const {info} = req.body;
-    if(info === process.env.PIN){
+    if(info === process.env.PTN_CODE){
         res.status(200).json('valid');
     }
     else{

@@ -1,27 +1,26 @@
-const CreateDBConnection = require('./dbRouter.js');
+const db = require('../../sqlite/sqlite.js');
 
-const DeleteUID = async (uniqueData) => {
+const DeleteUID = (uniqueData) => {
+  if (!uniqueData) {
+    return null;
+  }
 
-    if (!uniqueData) {
-        return null;
-    }
+  const sql = 'DELETE FROM ticket_uid WHERE UID = ?';
 
-    try {
-        const connection = await CreateDBConnection();
-        const [results] = await connection.execute(
-            'DELETE FROM ticket_uid WHERE UID = ?', [uniqueData]
-        );
+  return new Promise((resolve, reject) => {
+    db.run(sql, [uniqueData], function (err) {
+      if (err) {
+        console.error('❌ Error deleting UID:', err.message);
+        return reject(2); // Error occurred
+      }
 
-        connection.end(); // Close connection
-
-        if (results.affectedRows > 0) {
-            return 1;
-        } else {
-            return 0;
-        }
-        } catch (err) {
-            return 2;
-        }
-    };
+      if (this.changes > 0) {
+        resolve(1); // Success
+      } else {
+        resolve(0); // No rows affected (UID not found)
+      }
+    });
+  });
+};
 
 module.exports = { DeleteUID };

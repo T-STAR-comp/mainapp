@@ -1,32 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const CreateDBConnection = require('../db_router.js');
+const db = require('../../sqlite/sqlite.js');
 
+router.get('/', (req, res) => {
+  const sql = 'SELECT * FROM landingpage_status';
 
-router.get('/',async(req,res)=>{
-    const connection = await CreateDBConnection();
-
-    try{
-        const [results] = await connection.execute(
-            'SELECT * FROM landingpage_status'
-        );
-        if (results.length > 0) {
-            // Handle case where rows are returned
-            if (results[0].landingstate === 1) {
-                res.status(200).send('1');
-            } else {
-                res.status(200).send('Landing state is not 1');
-            }
-        } else {
-            // Handle empty table (results = [])
-            res.status(200).send('0');
-        }
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      res.send({ message: `An error: ${err.message} occurred.` });
+    } else {
+      if (rows.length > 0) {
+        if (rows[0].landingstate === 1) {
+          res.status(200).json(1);
+        } 
+      }
+      if(rows.length < 1) {
+        res.status(200).json(0);
+      }
     }
-    catch(err){
-        if(err){
-            res.send({message:`an error :${err} occured.`});
-        }
-    }
+  });
 });
 
 module.exports = router;

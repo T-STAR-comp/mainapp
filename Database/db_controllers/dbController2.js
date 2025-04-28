@@ -1,21 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const createDBConnection = require('../db_router.js');
+const db = require('../../sqlite/sqlite.js');
 
-router.post('/', async (req,res) => {
-    console.log(req.body);
+router.post('/', (req, res) => {
+  console.log(req.body);
 
-    const conn = createDBConnection();
-    
-    try{
-        const [result] = await conn.execute(
-            null
-        );
+  const sql = '/* your SQL query here */';
+  const params = []; // add your parameters here
+
+  db.run(sql, params, function (err) {
+    if (err) {
+      console.error(err);
+      res.status(500).send({ message: 'Database error', error: err.message });
+    } else {
+      res.status(200).send({ message: 'Success', changes: this.changes });
     }
-    catch(err){
-        console.log(err);
-    }
-
+  });
 });
 
 module.exports = router;

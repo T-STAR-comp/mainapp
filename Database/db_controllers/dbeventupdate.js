@@ -1,30 +1,27 @@
-const createDBConnection = require('../db_router');
+const db = require('../../sqlite/sqlite.js');
 
-const UpdateDatabase = async (amount, EventName) => {
-    const conn = await createDBConnection();
-    
-    try {
-        const [result] = await conn.execute(
-            'UPDATE eventdetails SET TotalRev = TotalRev + ? WHERE EventName = ?',
-            [amount, EventName]
-        );
+const UpdateDatabase = (amount, EventName) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE eventdetails 
+      SET TotalRev = TotalRev + ? 
+      WHERE EventName = ?
+    `;
+    const params = [amount, EventName];
 
-        if (result.affectedRows > 0) {
-            //console.log('db has been mutated');
-            return 'ok';
-        } else {
-            //console.log('No rows were updated.');
-            return 'no_changes';
-        }
-    } catch (err) {
-        //console.error('Database update failed:', err);
-        throw err; // Re-throw error to let caller handle it
-    } finally {
-        await conn.end(); // Ensure the connection is closed
-    }
+    db.run(sql, params, function (err) {
+      if (err) {
+        reject(err);
+      } else if (this.changes > 0) {
+
+        resolve('ok');
+      } else {
+        resolve('no_changes');
+      }
+    });
+  });
 };
 
-
 module.exports = {
-    UpdateDatabase,
-}
+  UpdateDatabase,
+};

@@ -1,26 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const CreateDBConnection = require('../db_router.js');
+const db = require('../../sqlite/sqlite.js');
 
+router.get('/', (req, res) => {
+  const sql = 'SELECT * FROM eventdetails';
 
-router.get('/',async(req,res)=>{
-    const connection = await CreateDBConnection();
-
-    try{
-        const [results] = await connection.execute(
-            'SELECT * FROM eventdetails'
-        );
-        if(results){
-            //console.log(results[0]);
-            //const {Event_ID,EventName,TicketsSold,DailyRev,TotalRev} = results[0];
-            res.status(200).json(results);
-        }
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      res.send({ message: `An error: ${err.message} occurred.` });
+    } else {
+      res.status(200).json(rows);
     }
-    catch(err){
-        if(err){
-            res.send({message:`an error :${err} occured.`});
-        }
-    }
+  });
 });
 
 module.exports = router;

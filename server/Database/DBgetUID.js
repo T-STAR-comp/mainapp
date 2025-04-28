@@ -1,43 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const CreateDBConnection = require('./dbRouter.js');
+const db = require('../../sqlite/sqlite.js'); // Import SQLite database connection
 const CleanUp = require('./DBdeleteUID.js');
 
-//still needs work, it does not fntion properly
-router.post('/',async(req,res)=>{
-    const {uniqueData} = req.body;
+router.post('/', async (req, res) => {
+    const { uniqueData } = req.body;
 
-    if (uniqueData != '') {
+    if (uniqueData !== '') {
+        try {
+            // Query to check if the UID exists
+            const sql = 'SELECT * FROM ticket_uid WHERE UID = ?';
+            db.get(sql, [uniqueData], async (err, row) => {
+                if (err) {
+                    return res.status(500).send({ message: 'Database Error' });
+                }
 
-        try{
-            const connection = await CreateDBConnection();
-            const [results] = await connection.execute(
-                'SELECT * FROM ticket_uid WHERE UID = (?)',[uniqueData]
-            );
-    
-            if(results.length>0) {
-                const cleanup = await CleanUp.DeleteUID(uniqueData);
-                if(cleanup === 1) {
-                    res.status(200).send({message:'VALID'});
+                if (row) {
+                    // If UID exists, attempt to delete
+                    const cleanup = await CleanUp.DeleteUID(uniqueData);
+                    if (cleanup === 1) {
+                        res.status(200).send({ message: 'VALID' });
+                    } else {
+                        res.status(400).send({ message: 'OFFLOADING UID ERROR, Please Try Again!' });
+                    }
+                } else {
+                    // If UID does not exist
+                    res.status(200).send({ message: 'INVALID' });
                 }
-                if(cleanup != 1) {
-                    res.status(200).send({message:'OFFLOADING UID ERROR, Please Try Again!'});
-                }
-            }
-            else if(results.length===0){
-                res.status(200).send({message:'INVALID'});
-            }
-    
+            });
+        } catch (err) {
+            console.error('Error:', err);
+            res.status(500).send({ message: 'ERROR' });
         }
-        catch(err){
-            if(err){
-                res.send({message:`ERROR`});
-            }
-        };
-    };
-
-    if (uniqueData === '') {
-        res.status(200).send({message:'NULL VAL'});
+    } else {
+        res.status(200).send({ message: 'NULL VAL' });
     }
 });
 

@@ -3,11 +3,12 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const app = express();
+const db = require('./sqlite/sqlite.js');
 const port = process.env.PORT_NUM || 8080;
 
 // Require routes & controllers For client-end related requests
 const generalLimiter = require('./CONTROLLERS/rateLimiter.js');
-const createDBConnection = require('./Database/db_router.js');
+
 const getEventDataRoute = require('./routers/GetEventRoute.js');
 const createQrCode = require('./routers/QRgenRoute.js');
 const makePayment = require('./routers/PaymentRoute.js');
@@ -33,11 +34,11 @@ const adminRoutes = [
   { path: '/checkstate', handler: require('./server/Database/states.js') },
   { path: '/getuid', handler: require('./server/Database/DBgetUID.js') },
   { path: '/admin/consoledata', handler: require('./server/Database/DBgetconsole.js') },
-  { path: '/getconsoledata/person', handler: require('./server/Database/dbgetconsoleP.js') },
+  { path: '/admin/consoledata', handler: require('./server/Database/dbgetconsoleP.js') },
 ];
 
 // Define allowed origins (filter out undefined values)
-const allowedOrigins = [process.env.ORIGIN_URL, process.env.ORIGIN_URL2].filter(Boolean);
+const allowedOrigins = [process.env.ORIGIN_URL, process.env.ORIGIN_URL2]
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -77,15 +78,14 @@ adminRoutes.forEach(({ path, handler }) => {
 app.use('/Api/ticketmalawi', adminRouter);
 
 // Serve the React build files & handle all unknown routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.get('/', (req, res) => {
+  res.status(200).send({msg:"hello world"});
 });
 
 // Start server function with error handling
 async function start() {
   try {
-    const db = await createDBConnection();
-    if (db && typeof db === 'object') {
+    if (db) {
       app.listen(port, () => console.log(`Server is live on port ${port}`));
     } else {
       console.error('Database connection failed.');

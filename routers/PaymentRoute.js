@@ -6,7 +6,7 @@ let exportedPaymentData = null; // Variable to hold payment data
 
 router.post('/', async (req, res) => {
     const fetch = (await import('node-fetch')).default;
-    const secretKey = process.env.LIVE_SEC_KEY;
+    const secretKey = process.env.TEST_SECRET_KEY;
     const paychanguURL = process.env.PAYCHANGU_URL;
     const randomTxRef = Math.floor(Math.random() * 1000000000) + 1;
 
