@@ -4,7 +4,7 @@ const path = require('path');
 require('dotenv').config();
 const app = express();
 const db = require('./sqlite/sqlite.js');
-const port = process.env.PORT_NUM || 8080;
+const port = process.env.PORT || 8080;
 
 // Require routes & controllers For client-end related requests
 const generalLimiter = require('./CONTROLLERS/rateLimiter.js');
