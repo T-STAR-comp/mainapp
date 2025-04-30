@@ -78,8 +78,8 @@ adminRoutes.forEach(({ path, handler }) => {
 app.use('/Api/ticketmalawi', adminRouter);
 
 // Serve the React build files & handle all unknown routes
-app.get('/', (req, res) => {
-  res.status(200).send({msg:"hello world"});
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Start server function with error handling
