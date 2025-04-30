@@ -16,8 +16,8 @@ router.post('/', async (req, res) => {
         email: req.body.email,
         first_name: req.body.first_name,
         last_name: req.body.last_name,
-        callback_url: req.body.callback_url,
-        return_url: req.body.return_url,
+        callback_url: process.env.callback_url,
+        return_url: process.env.return_url,
         tx_ref: randomTxRef.toString(),
         customization: {
             title: req.body.customization.title,
