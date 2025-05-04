@@ -53,6 +53,22 @@ db.serialize(() => {
     )
   `);
 
+    // Table 2: log_table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS log_table (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        tx_ref TEXT,
+        url TEXT,
+        baseIdentifier TEXT,
+        EventName REAL,
+        TicketHolder TEXT,
+        EventTime TEXT,
+        TicketType TEXT,
+        EventDate TEXT,
+        Venue TEXT
+      )
+    `);
+
   // Table 3: landingpage_status
   db.run(`
     CREATE TABLE IF NOT EXISTS landingpage_status (

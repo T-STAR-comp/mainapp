@@ -19,6 +19,8 @@ const dbgetevent = require('./Database/db_controllers/dbgetevent.js');
 const dbUpdateUID = require('./Database/db_controllers/dbUpdateUID.js');
 const dbgetlandingstate = require('./Database/db_controllers/dbgetstate1.js');
 const VerifyTransID = require('./routers/transidVerify.js');
+const postLog = require('./Database/db_controllers/dbpostlog.js');
+const getLog = require('./Database/db_controllers/dbgetlog.js');
 
 // Require routes & controllers For Admin related requests
 const adminRoutes = [
@@ -69,6 +71,8 @@ app.use('/api/getevent/data/db/ticketmalawi', dbgetevent);
 app.use('/api/updatedb/ticketuid/ticketmalawi/valid', dbUpdateUID);
 app.use('/Api/getlandingpage/state', dbgetlandingstate);
 app.use('/Api/verifypayment/ticketmalawi/verify', VerifyTransID);
+app.use('/api/postlog/ticketmalawi', postLog);
+app.use('/api/getlog/ticketmalawi', getLog);
 
 // Admin routes - Simplified
 const adminRouter = express.Router();
