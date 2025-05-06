@@ -58,7 +58,7 @@ db.serialize(() => {
       CREATE TABLE IF NOT EXISTS log_table (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         tx_ref TEXT,
-        url TEXT,
+        url TEXT UNIQUE,
         baseIdentifier TEXT,
         EventName REAL,
         TicketHolder TEXT,
