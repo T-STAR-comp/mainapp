@@ -8,6 +8,7 @@ const port = process.env.PORT || 8080;
 
 // Require routes & controllers For client-end related requests
 const generalLimiter = require('./CONTROLLERS/rateLimiter.js');
+const captcha = require('./server/Login/captcha.js');
 
 const getEventDataRoute = require('./routers/GetEventRoute.js');
 const createQrCode = require('./routers/QRgenRoute.js');
@@ -58,6 +59,7 @@ const corsOptions = {
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(generalLimiter);
+app.use('/Api/tkm/captcha', captcha);
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Client-end routes

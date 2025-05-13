@@ -23,7 +23,7 @@ router.post('/', (req, res) => {
     first_name,
     last_name,
     total_tickets,
-    amount,
+    amount-(amount*1/100),
     ticket_UID
   ];
 
