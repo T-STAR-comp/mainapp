@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 require('dotenv').config();
-const UpdateDB = require('../Database/db_controllers/dbeventupdate.js');
+const UpdateDB = require('../Database/Event_db_controllers/dbeventupdate.js');
 
 router.post('/', async (req,res)=>{
     const fetch = (await import('node-fetch')).default;
-    const secretKey = process.env.TEST_SECRET_KEY; //process.env.LIVE_SEC_KEY; 
+    const secretKey = process.env.LIVE_SEC_KEY; 
     const {trans_ID} = req.body;
 
     try{

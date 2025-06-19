@@ -3,10 +3,10 @@ const router = express.Router();
 const db = require('../../sqlite/sqlite.js');
 
 router.post('/', (req, res) => {
-  const { tx_ref } = req.body;
+  const { EventName } = req.body;
 
-  const sql = `SELECT * FROM log_table WHERE tx_ref = ?`;
-  const params = [tx_ref];
+  const sql = `SELECT * FROM Ticket_type WHERE event_name = ?`;
+  const params = [EventName];
 
   db.all(sql, params, (err, rows) => {
     if (err) {

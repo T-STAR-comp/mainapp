@@ -2,30 +2,30 @@ const express = require('express');
 const router = express.Router();
 require('dotenv').config();
 
-let exportedPaymentData = null; // Variable to hold payment data
-
 router.post('/', async (req, res) => {
     const fetch = (await import('node-fetch')).default;
     const secretKey = process.env.LIVE_SEC_KEY;
     const paychanguURL = process.env.PAYCHANGU_URL;
     const randomTxRef = Math.floor(Math.random() * 1000000000) + 1;
+    const fullName = req.body.FullName;
+    const [firstName, lastName] = fullName.trim().split(" ");
 
     const paymentData = {
         amount: req.body.amount,
-        currency: req.body.currency,
+        currency: 'MWK',
         email: req.body.email,
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
+        first_name: firstName,
+        last_name: lastName,
         callback_url: req.body.callback_url,
         return_url: req.body.return_url,
         tx_ref: randomTxRef.toString(),
         customization: {
-            title: req.body.customization.title,
-            description: req.body.customization.description
+            title: req.body.tittle,
+            description: "Payment For Transport Service"
         },
         meta: {
-            uuid: req.body.meta.uuid,
-            response: req.body.meta.response
+            uuid: "uuid",
+            response: "success"
         }
     };
 
@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+        
         const responseData = await response.json();
         res.json(responseData);
         res.status(200);
