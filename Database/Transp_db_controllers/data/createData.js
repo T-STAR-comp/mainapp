@@ -53,10 +53,10 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: 'Duplicate booking detected for this email/UID.' });
     }
 
-    // Step 2: Find last seat number for the same date and provider
+    // Step 2: Find last seat number for the same date, provider, and departure
     const [seatRows] = await db.execute(
-      `SELECT seat_number FROM ticket_sales WHERE travel_date = ? AND provider_username = ? ORDER BY id DESC LIMIT 1`,
-      [cleanTravelDate, cleanUsername]
+      `SELECT seat_number FROM ticket_sales WHERE travel_date = ? AND provider_username = ? AND departure = ? ORDER BY id DESC LIMIT 1`,
+      [cleanTravelDate, cleanUsername, cleanDeparture]
     );
 
     let nextSeat = 1;
