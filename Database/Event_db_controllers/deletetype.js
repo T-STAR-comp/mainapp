@@ -1,37 +1,33 @@
-const express = require('express');
+ const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.delete('/', (req, res) => {
+router.delete('/', async (req, res) => {
   const { EventName } = req.body;
 
   if (!EventName) {
     return res.status(400).send({ message: "EventName is required" });
   }
 
-  const selectSql = `SELECT * FROM Ticket_type WHERE event_name = ?`;
-  db.get(selectSql, [EventName], (err, row) => {
-    if (err) {
-      console.error('❌ Query error:', err.message);
-      return res.status(500).send({ message: `An error occurred: ${err.message}` });
-    }
+  try {
+    const db = req.app.locals.db;
 
-    if (!row) {
+    // Check if event exists
+    const [rows] = await db.execute(`SELECT * FROM Ticket_type WHERE event_name = ?`, [EventName]);
+
+    if (rows.length === 0) {
       return res.status(404).send({ message: `Event '${EventName}' not found.` });
     }
 
-    const deleteSql = `DELETE FROM Ticket_type WHERE event_name = ?`;
-    db.run(deleteSql, [EventName], function (deleteErr) {
-      if (deleteErr) {
-        console.error('❌ Delete error:', deleteErr.message);
-        return res.status(500).send({ message: `Delete failed: ${deleteErr.message}` });
-      }
+    // Delete the event
+    const [deleteResult] = await db.execute(`DELETE FROM Ticket_type WHERE event_name = ?`, [EventName]);
 
-      res.status(200).send({
-        message: `Event '${EventName}' deleted successfully.`
-      });
+    res.status(200).send({
+      message: `Event '${EventName}' deleted successfully.`
     });
-  });
+  } catch (err) {
+    console.error('❌ Error:', err.message);
+    res.status(500).send({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

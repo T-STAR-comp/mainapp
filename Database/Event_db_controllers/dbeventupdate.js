@@ -1,25 +1,22 @@
-const db = require('../../sqlite/sqlite.js');
+const UpdateDatabase = async (db, amount, EventName) => {
+  const sql = `
+    UPDATE eventdetails 
+    SET TotalRev = TotalRev + ? 
+    WHERE EventName = ?
+  `;
+  const params = [amount, EventName];
 
-const UpdateDatabase = (amount, EventName) => {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      UPDATE eventdetails 
-      SET TotalRev = TotalRev + ? 
-      WHERE EventName = ?
-    `;
-    const params = [amount, EventName];
+  try {
+    const [result] = await db.execute(sql, params);
 
-    db.run(sql, params, function (err) {
-      if (err) {
-        reject(err);
-      } else if (this.changes > 0) {
-
-        resolve('ok');
-      } else {
-        resolve('no_changes');
-      }
-    });
-  });
+    if (result.affectedRows > 0) {
+      return 'ok';
+    } else {
+      return 'no_changes';
+    }
+  } catch (err) {
+    throw err;
+  }
 };
 
 module.exports = {

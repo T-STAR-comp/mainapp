@@ -1,25 +1,20 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const router = express.Router();
 
-// Connect to the SQLite database
-const db = require('../../../sqlite/sqlite');
+router.get('/', async (req, res) => {
+  const db = req.app.locals.db;
 
-// GET route to fetch only username and type from transport_users
-router.get('/', (req, res) => {
-  const query = `
-    SELECT username, type, path
-    FROM transport_users
-  `;
-
-  db.all(query, [], (err, rows) => {
-    if (err) {
-      console.error('Database query error:', err.message);
-      return res.status(500).json({ error: 'Failed to fetch user data.' });
-    }
+  try {
+    const [rows] = await db.execute(`
+      SELECT username, type, path
+      FROM transport_users
+    `);
 
     res.status(200).json({ users: rows });
-  });
+  } catch (err) {
+    console.error('Database query error:', err);
+    return res.status(500).json({ error: 'Failed to fetch user data.' });
+  }
 });
 
 module.exports = router;

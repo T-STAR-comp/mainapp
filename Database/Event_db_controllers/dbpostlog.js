@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     tx_ref,
     qrCodeDataURL,
@@ -17,18 +16,17 @@ router.post('/', (req, res) => {
 
   const sql = `
     INSERT INTO log_table (
-    tx_ref,
-    url,
-    baseIdentifier,
-    EventName,
-    TicketHolder,
-    EventTime,
-    TicketType,
-    EventDate,
-    Venue
-) VALUES (
-    ?, ?, ?, ?, ?, ?, ?, ?, ?
-)`;
+      tx_ref,
+      url,
+      baseIdentifier,
+      EventName,
+      TicketHolder,
+      EventTime,
+      TicketType,
+      EventDate,
+      Venue
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
   const params = [
     tx_ref,
@@ -42,14 +40,14 @@ router.post('/', (req, res) => {
     Venue
   ];
 
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error('❌ Insert error:', err.message);
-      res.status(500).send({ message: `An error occurred: ${err.message}` });
-    } else {
-      res.status(200).send({ message: 'ok' });
-    }
-  });
+  try {
+    const db = req.app.locals.db;
+    await db.execute(sql, params);
+    res.status(200).send({ message: 'ok' });
+  } catch (err) {
+    console.error('❌ Insert error:', err.message);
+    res.status(500).send({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

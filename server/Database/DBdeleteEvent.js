@@ -1,24 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.delete('/', (req, res) => {
+router.delete('/', async (req, res) => {
+  const db = req.app.locals.db;
   const { info } = req.body;
 
   const sql = 'DELETE FROM eventdetails WHERE EventName = ?';
 
-  db.run(sql, [info], function (err) {
-    if (err) {
-      console.error('❌ Delete error:', err.message);
-      return res.status(500).send({ message: `An error occurred: ${err.message}` });
-    }
+  try {
+    const [result] = await db.execute(sql, [info]);
 
-    if (this.changes > 0) {
-      res.status(200).send({ message: 'Event successfully deleted', status: 'ok' });
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: 'Event successfully deleted', status: 'ok' });
     } else {
-      res.status(404).send({ message: 'No event found with that name', status: 'not found' });
+      return res.status(404).json({ message: 'No event found with that name', status: 'not found' });
     }
-  });
+  } catch (err) {
+    console.error('❌ Delete error:', err);
+    return res.status(500).json({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

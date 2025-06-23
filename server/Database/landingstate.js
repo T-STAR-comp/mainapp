@@ -1,55 +1,52 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js'); // Import SQLite database connection
 
-// POST Route to Insert Landing State
 router.post('/', async (req, res) => {
-    const { state } = req.body;
+  const { state } = req.body;
 
-    try {
-        // Prepare the SQL query to insert a new landing state
-        const sql = 'INSERT INTO landingpage_status (landingstate) VALUES (?)';
+  if (!state) {
+    return res.status(400).send({ message: 'Missing landing state value' });
+  }
 
-        // Execute the SQL query
-        db.run(sql, [state], function (err) {
-            if (err) {
-                return res.status(500).send({ message: `Error: ${err.message}` });
-            }
+  try {
+    const db = req.app.locals.db;
 
-            // If a row was inserted, send success message
-            res.status(200).send({ message: 'Landing state successfully added', status: 'ok' });
-        });
-    } catch (err) {
-        console.error('Error:', err);
-        res.status(500).send({ message: `Error occurred: ${err.message}` });
+    const sql = 'INSERT INTO landingpage_status (landingstate) VALUES (?)';
+    const [result] = await db.execute(sql, [state]);
+
+    if (result.affectedRows > 0) {
+      res.status(200).send({ message: 'Landing state successfully added', status: 'ok' });
+    } else {
+      res.status(500).send({ message: 'Insert failed', status: 'failed' });
     }
+  } catch (err) {
+    console.error('❌ Insert error:', err.message);
+    res.status(500).send({ message: `Error occurred: ${err.message}` });
+  }
 });
 
-// DELETE Route to Remove Landing State
 router.delete('/', async (req, res) => {
-    const { state } = req.body;
+  const { state } = req.body;
 
-    try {
-        // Prepare the SQL query to delete a landing state
-        const sql = 'DELETE FROM landingpage_status WHERE landingstate = ?';
+  if (!state) {
+    return res.status(400).send({ message: 'Missing landing state value' });
+  }
 
-        // Execute the SQL query
-        db.run(sql, [state], function (err) {
-            if (err) {
-                return res.status(500).send({ message: `Error: ${err.message}` });
-            }
+  try {
+    const db = req.app.locals.db;
 
-            // If rows were affected, send success message
-            if (this.changes > 0) {
-                res.status(200).send({ message: 'Landing state successfully deleted', status: 'ok' });
-            } else {
-                res.status(200).send({ message: 'No matching landing state found to delete' });
-            }
-        });
-    } catch (err) {
-        console.error('Error:', err);
-        res.status(500).send({ message: `Error occurred: ${err.message}` });
+    const sql = 'DELETE FROM landingpage_status WHERE landingstate = ?';
+    const [result] = await db.execute(sql, [state]);
+
+    if (result.affectedRows > 0) {
+      res.status(200).send({ message: 'Landing state successfully deleted', status: 'ok' });
+    } else {
+      res.status(200).send({ message: 'No matching landing state found to delete' });
     }
+  } catch (err) {
+    console.error('❌ Delete error:', err.message);
+    res.status(500).send({ message: `Error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

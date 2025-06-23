@@ -1,44 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { EventName, NewEventName, NewType, NewPrice } = req.body;
 
-  const selectSql = `SELECT * FROM Ticket_type WHERE event_name = ?`;
-  const selectParams = [EventName];
+  try {
+    const db = req.app.locals.db;
 
-  db.get(selectSql, selectParams, (err, row) => {
-    if (err) {
-      console.error('❌ Query error:', err.message);
-      return res.status(500).send({ message: `An error occurred: ${err.message}` });
-    }
+    // Check if event exists
+    const [rows] = await db.execute(
+      `SELECT * FROM Ticket_type WHERE event_name = ?`,
+      [EventName]
+    );
 
-    if (!row) {
-      // If no matching event found
+    if (rows.length === 0) {
       return res.status(404).send({ message: `Event '${EventName}' not found.` });
     }
 
-    // Event exists — proceed to update
-    const updateSql = `UPDATE Ticket_type SET event_name = ?, type = ?, price = ? WHERE event_name = ?`;
-    const updateParams = [NewEventName, NewType, NewPrice, EventName];
+    // Update the event
+    const [updateResult] = await db.execute(
+      `UPDATE Ticket_type SET event_name = ?, type = ?, price = ? WHERE event_name = ?`,
+      [NewEventName, NewType, NewPrice, EventName]
+    );
 
-    db.run(updateSql, updateParams, function (updateErr) {
-      if (updateErr) {
-        console.error('❌ Update error:', updateErr.message);
-        return res.status(500).send({ message: `Update failed: ${updateErr.message}` });
+    res.status(200).send({
+      message: `Event '${EventName}' updated successfully.`,
+      updated: {
+        event_name: NewEventName,
+        type: NewType,
+        price: NewPrice
       }
-
-      res.status(200).send({
-        message: `Event '${EventName}' updated successfully.`,
-        updated: {
-          event_name: NewEventName,
-          type: NewType,
-          price: NewPrice
-        }
-      });
     });
-  });
+  } catch (err) {
+    console.error('❌ Update error:', err.message);
+    res.status(500).send({ message: `Update failed: ${err.message}` });
+  }
 });
 
 module.exports = router;

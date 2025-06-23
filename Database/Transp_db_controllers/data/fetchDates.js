@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../../sqlite/sqlite'); 
 
 // Basic input sanitizer
 const sanitizeText = (input) => {
@@ -8,10 +7,9 @@ const sanitizeText = (input) => {
   return input.replace(/[^a-zA-Z0-9 ,.-]/g, '').trim();
 };
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { travel_date, provider_username } = req.body;
 
-  // Basic validation
   if (!travel_date || !provider_username) {
     return res.status(200).json({ error: 'Missing travel_date or provider_username.' });
   }
@@ -25,23 +23,18 @@ router.post('/', (req, res) => {
     ORDER BY seat_number ASC
   `;
 
-  db.all(query, [cleanDate, cleanUsername], (err, rows) => {
-    if (err) {
-      return res.status(200).json({ error: 'Database error while fetching records.' });
-    }
-    console.log(rows)
+  try {
+    const db = req.app.locals.db;  // Make sure you assign your mysql connection here
+    const [rows] = await db.execute(query, [cleanDate, cleanUsername]);
+
+    console.log(rows);
     res.status(200).json({
       message: `Found ${rows.length} record(s) for ${cleanUsername} on ${cleanDate}.`,
       records: rows
     });
-  });
+  } catch (err) {
+    return res.status(200).json({ error: 'Database error while fetching records.' });
+  }
 });
 
 module.exports = router;
-
-/*
-{
-  "travel_date": "2025-06-14",
-  "provider_username": "Machawi"
-}
-*/

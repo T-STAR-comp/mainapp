@@ -1,19 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { UidValue } = req.body;
-
   const sql = 'INSERT INTO ticket_uid (UID) VALUES (?)';
 
-  db.run(sql, [UidValue], function (err) {
-    if (err) {
-      res.status(500).send({ message: 'Database error: ' + err.message });
-    } else {
-      res.status(200).send({ message: 'success' });
-    }
-  });
+  try {
+    const db = req.app.locals.db;
+    await db.execute(sql, [UidValue]);
+    res.status(200).send({ message: 'success' });
+  } catch (err) {
+    res.status(500).send({ message: 'Database error: ' + err.message });
+  }
 });
 
 module.exports = router;

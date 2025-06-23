@@ -3,11 +3,12 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const app = express();
-const db = require('./sqlite/sqlite.js');
+const createDBConnection = require('./Database/db_router.js');
 const port = process.env.PORT || 8080;
 
 // Define allowed origins (filter out undefined values)
-const allowedOrigins = [process.env.ORIGIN_URL, process.env.ORIGIN_URL2]
+const allowedOrigins = [process.env.ORIGIN_URL, process.env.ORIGIN_URL2];
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -20,6 +21,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
+
 // Require routes & controllers For client-end related requests
 const generalLimiter = require('./CONTROLLERS/rateLimiter.js');
 const captcha = require('./server/Login/captcha.js');
@@ -63,7 +65,6 @@ const adminRoutes = [
   { path: '/admin/consoledata', handler: require('./server/Database/DBgetconsole.js') },
   { path: '/admin/consoledata', handler: require('./server/Database/dbgetconsoleP.js') },
 ];
-
 
 // Middleware
 app.use(express.json());
@@ -111,6 +112,7 @@ app.use('/api/scanticket/verify', require('./Database/Transp_db_controllers/data
 app.use('/api/process/mobilepayment/airtel/tnm', require('./Database/Transp_db_controllers/payments/mobilePayment.js'));
 app.use('/api/processpayment/bank/direct', require('./Database/Transp_db_controllers/payments/bankPayment.js'));
 app.use('/api/generalpayment/processing', require('./Database/Transp_db_controllers/payments/generalPayment.js'));
+
 // Admin routes - Simplified
 const adminRouter = express.Router();
 adminRoutes.forEach(({ path, handler }) => {
@@ -123,15 +125,20 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Start server function with error handling
+// Start server function with DB connection
 async function start() {
   try {
-    if (db) {
-      app.listen(port, () => console.log(`Server is live on port ${port}`));
-    } else {
+    const db = await createDBConnection();
+
+    if (!db) {
       console.error('Database connection failed.');
       process.exit(1);
     }
+
+    // Make DB connection available throughout the app (optional)
+    app.locals.db = db;
+
+    app.listen(port, () => console.log(`Server is live on port ${port}`));
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

@@ -1,26 +1,22 @@
-const db = require('../../sqlite/sqlite.js');
-
-const DeleteUID = (uniqueData) => {
+const DeleteUID = async (uniqueData, db) => {
   if (!uniqueData) {
     return null;
   }
 
   const sql = 'DELETE FROM ticket_uid WHERE UID = ?';
 
-  return new Promise((resolve, reject) => {
-    db.run(sql, [uniqueData], function (err) {
-      if (err) {
-        console.error('❌ Error deleting UID:', err.message);
-        return reject(2); // Error occurred
-      }
+  try {
+    const [result] = await db.execute(sql, [uniqueData]);
 
-      if (this.changes > 0) {
-        resolve(1); // Success
-      } else {
-        resolve(0); // No rows affected (UID not found)
-      }
-    });
-  });
+    if (result.affectedRows > 0) {
+      return 1; // Success
+    } else {
+      return 0; // UID not found
+    }
+  } catch (err) {
+    console.error('❌ Error deleting UID:', err);
+    return 2; // Error occurred
+  }
 };
 
 module.exports = { DeleteUID };

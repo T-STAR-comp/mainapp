@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
+  const db = req.app.locals.db;
+
   const status = 0;
 
   const {
@@ -36,14 +37,13 @@ router.post('/', (req, res) => {
     eventUrl, eventDescription, status
   ];
 
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error('❌ Insert error:', err.message);
-      res.status(500).send({ message: `An error occurred: ${err.message}` });
-    } else {
-      res.status(200).send({ message: 'Event was successfully created', eventId: this.lastID });
-    }
-  });
+  try {
+    const [result] = await db.execute(sql, params);
+    res.status(200).json({ message: 'Event was successfully created', eventId: result.insertId });
+  } catch (err) {
+    console.error('❌ Insert error:', err);
+    res.status(500).json({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

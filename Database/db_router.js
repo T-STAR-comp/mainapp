@@ -9,7 +9,7 @@ async function createDBConnection() {
             password: process.env.PASSWORD,
             database: process.env.DATABASE
         });
-        //console.log('Connected to the database');
+        console.log('Connected to the database (MYSQL)');
         return db;
     } catch (err) {
         //console.error('There was an error connecting to the database:', err);

@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     email,
     first_name,
@@ -18,23 +17,26 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
+  // Calculate total after 1% deduction
+  const totalAfterFee = amount - (amount * 1 / 100);
+
   const params = [
     email,
     first_name,
     last_name,
     total_tickets,
-    amount-(amount*1/100),
+    totalAfterFee,
     ticket_UID
   ];
 
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error('❌ Insert error:', err.message);
-      res.status(500).send({ message: `An error occurred: ${err.message}` });
-    } else {
-      res.status(200).send({ message: 'ok' });
-    }
-  });
+  try {
+    const db = req.app.locals.db; // MySQL connection
+    const [result] = await db.execute(sql, params);
+    res.status(200).send({ message: 'ok', insertId: result.insertId });
+  } catch (err) {
+    console.error('❌ Insert error:', err.message);
+    res.status(500).send({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

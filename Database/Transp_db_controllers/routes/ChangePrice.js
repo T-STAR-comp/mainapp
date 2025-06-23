@@ -1,51 +1,41 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../../sqlite/sqlite.js');
 
-// PATCH to change route price
-router.put('/', (req, res) => {
+router.put('/', async (req, res) => {
   const { id, userName, price } = req.body;
 
-  // Basic validation
   if (!id || !userName || typeof price !== 'number' || price < 0) {
     return res.status(400).json({ error: 'Invalid or missing id, userName, or price.' });
   }
 
-  // Check if route with the given id and userName exists
-  const checkSql = `SELECT price FROM transport_Routes WHERE id = ? AND userName = ?`;
+  const db = req.app.locals.db;
 
-  db.get(checkSql, [id, userName], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Internal server error.' });
-    }
+  try {
+    // Check if route exists
+    const [rows] = await db.execute(
+      'SELECT price FROM transport_Routes WHERE id = ? AND userName = ?',
+      [id, userName]
+    );
 
-    if (!row) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Route not found for the given user.' });
     }
 
-    if (row.price === price) {
+    if (rows[0].price === price) {
       return res.status(200).json({ message: `Route already has price ${price}. No update needed.` });
     }
 
-    // Update the price
-    const updateSql = `UPDATE transport_Routes SET price = ? WHERE id = ? AND userName = ?`;
+    // Update price
+    await db.execute(
+      'UPDATE transport_Routes SET price = ? WHERE id = ? AND userName = ?',
+      [price, id, userName]
+    );
 
-    db.run(updateSql, [price, id, userName], function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Failed to update price.' });
-      }
-
-      return res.status(200).json({ message: `Price updated successfully to ${price}.` });
-    });
-  });
+    return res.status(200).json({ message: `Price updated successfully to ${price}.` });
+  } catch (err) {
+    console.error('DB error:', err);
+    return res.status(500).json({ error: 'Failed to update price.' });
+  }
 });
 
 module.exports = router;
-
-/*
-{
-  "id": 2,
-  "userName": "Machawi",
-  "price": 8500
-}
-*/

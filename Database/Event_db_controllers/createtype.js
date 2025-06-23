@@ -1,30 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js');
 
-router.post('/', (req, res) => {
-  const {EventName, type, uid, price} = req.body;
+// Assume you have a function to get the MySQL db connection from the request
+// For example: req.app.locals.db
+router.post('/', async (req, res) => {
+  const { EventName, type, uid, price } = req.body;
 
   const sql = `
     INSERT INTO Ticket_type (
-    event_name,
-    type,
-    uid,
-    price
-) VALUES (
-    ?, ?, ?
-)`;
+      event_name,
+      type,
+      uid,
+      price
+    ) VALUES (?, ?, ?, ?)
+  `;
 
-  const params = [EventName, type, uid, price];
+  try {
+    const db = req.app.locals.db; // get mysql connection from express app.locals
 
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error('❌ Insert error:', err.message);
-      res.status(500).send({ message: `An error occurred: ${err.message}` });
-    } else {
-      res.status(200).send({ message: 'ok' });
-    }
-  });
+    const [result] = await db.execute(sql, [EventName, type, uid, price]);
+
+    // result contains info about affectedRows, insertId, etc.
+    res.status(200).send({ message: 'ok', insertId: result.insertId });
+  } catch (err) {
+    console.error('❌ Insert error:', err.message);
+    res.status(500).send({ message: `An error occurred: ${err.message}` });
+  }
 });
 
 module.exports = router;

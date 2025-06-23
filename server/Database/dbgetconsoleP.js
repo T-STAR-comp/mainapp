@@ -1,24 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../sqlite/sqlite.js'); // Import the SQLite database connection
 
 router.post('/', async (req, res) => {
-    const { Email } = req.body;
+  const db = req.app.locals.db;
+  const { Email } = req.body;
 
-    const sql = 'SELECT * FROM customer_records WHERE email = ?';
+  if (!Email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
 
-    db.get(sql, [Email], (err, row) => {
-        if (err) {
-            console.error('❌ Error fetching customer record:', err.message);
-            return res.status(500).json({ message: 'Database Error Occurred' });
-        }
+  const sql = 'SELECT * FROM customer_records WHERE email = ?';
 
-        if (row) {
-            res.status(200).json(row);
-        } else {
-            res.status(404).json({ message: 'No record found for this email' });
-        }
-    });
+  try {
+    const [rows] = await db.execute(sql, [Email]);
+
+    if (rows.length > 0) {
+      res.status(200).json(rows[0]);
+    } else {
+      res.status(404).json({ message: 'No record found for this email' });
+    }
+  } catch (err) {
+    console.error('❌ Error fetching customer record:', err);
+    res.status(500).json({ message: 'Database Error Occurred' });
+  }
 });
 
 module.exports = router;
