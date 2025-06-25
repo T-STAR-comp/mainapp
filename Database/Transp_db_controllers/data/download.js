@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PDFDocument = require('pdfkit');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const {sendTicketEmail} = require('./email.js');
 
 router.post('/', async (req, res) => {
   const {
@@ -28,6 +29,11 @@ router.post('/', async (req, res) => {
       'Content-Length': pdfData.length,
     });
     res.send(pdfData);
+
+    sendTicketEmail(customer_email, customer_name, provider_username, pdfData)
+    .then(() => console.log('Ticket email sent successfully'))
+    .catch(err => console.error('Error sending ticket email:', err));
+
   });
 
   // Try loading logo
