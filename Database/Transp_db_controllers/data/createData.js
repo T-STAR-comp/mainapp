@@ -35,11 +35,15 @@ router.post('/', async (req, res) => {
     // Generate QR and UID_val
     const { qrCodeDataURL, identifier } = await generateQRCodeFromEmail(email);
 
+    // Lowercase route and departure if they are strings
+    const routeLower = typeof route === 'string' ? route.toLowerCase() : route;
+    const departureLower = typeof departure === 'string' ? departure.toLowerCase() : departure;
+
     const cleanUID = sanitizeText(identifier);
     const cleanCustomerName = sanitizeText(customerName);
     const cleanCustomerEmail = sanitizeText(email);
-    const cleanRoute = sanitizeText(route);
-    const cleanDeparture = sanitizeText(departure);
+    const cleanRoute = sanitizeText(routeLower);
+    const cleanDeparture = sanitizeText(departureLower);
     const cleanTravelDate = sanitizeText(travel_date);
     const cleanUsername = sanitizeText(provider_username);
 
@@ -63,7 +67,7 @@ router.post('/', async (req, res) => {
     if (seatRows.length > 0 && seatRows[0].seat_number) {
       nextSeat = parseInt(seatRows[0].seat_number, 10) + 1;
       if (nextSeat > 30) {
-        return res.status(409).json({ error: 'All seats are booked for this provider on this date.' });
+        return res.status(409).json({ error: `All seats are booked for ${provider_username} on this date.` });
       }
     }
 
