@@ -4,11 +4,20 @@ const router = express.Router();
 // Basic sanitization
 const sanitizeText = (input) => {
   if (typeof input !== 'string') return '';
-  return input.replace(/[^a-zA-Z0-9_.-]/g, '').trim();
+  // Remove unwanted characters, but allow spaces
+  const cleaned = input.replace(/[^a-zA-Z0-9_.\- ]/g, '').trim();
+  // Check for multiple consecutive spaces
+  if (/\s{2,}/.test(cleaned)) {
+    // Option 1: Reject input
+    return ''; // or throw an error, or return a special value
+
+  }
+  return cleaned;
 };
 
 router.post('/', async (req, res) => {
   const { provider_username } = req.body;
+  console.log(provider_username)
   if (!provider_username || typeof provider_username !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid provider_username.' });
   }
@@ -25,7 +34,7 @@ router.post('/', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const [rows] = await db.execute(query, [sanitizedUsername]);
-
+    console.log(rows)
     if (rows.length === 0) {
       return res.status(200).json({ message: 'No records found for this provider.' });
     }

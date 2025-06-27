@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const {getSupportedBanks} = require('../payments/getbanks.js');
 
 // Basic sanitization helper
 const sanitizeText = (input) => {
@@ -38,14 +39,19 @@ router.post('/', async (req, res) => {
       [cleanUsername]
     );
 
-    res.status(200).json({
-      provider: cleanUsername,
-      balance: providerBalance,
-      paid_sales: salesRows.map(sale => ({
-        travel_date: sale.travel_date,
-        total_price: sale.total_price
-      }))
-    });
+    const banks = await getSupportedBanks();
+
+    if (banks) {
+      res.status(200).json({
+        provider: cleanUsername,
+        balance: providerBalance,
+        banks: banks,
+        paid_sales: salesRows.map(sale => ({
+          travel_date: sale.travel_date,
+          total_price: sale.total_price
+        }))
+      });
+    }
   } catch (err) {
     console.error('Database error:', err);
     return res.status(500).json({ error: 'Internal server error' });

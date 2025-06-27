@@ -3,10 +3,10 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 router.post('/', async (req, res) => {
-  const { identifier, password } = req.body; // username or email
+  const { identifier, password, loginType } = req.body; // username or email
 
-  if (!identifier || !password) {
-    return res.status(400).json({ error: 'Please provide username/email and password' });
+  if (!identifier || !password || !loginType) {
+    return res.status(400).json({ error: 'Please provide username/email, password & loginType' });
   }
 
   const db = req.app.locals.db;
@@ -23,7 +23,12 @@ router.post('/', async (req, res) => {
 
     const user = rows[0];
 
-    const match = await bcrypt.compare(password, user.password);
+    let match = false;
+    if (loginType === 'regular') {
+      match = await bcrypt.compare(password, user.password);
+    } else if (loginType === 'admin') {
+      match = await bcrypt.compare(password, user.admin_password);
+    }
     if (!match) {
       return res.status(200).json({ error: 'Invalid username/email or password' });
     }
@@ -34,6 +39,7 @@ router.post('/', async (req, res) => {
       userId: user.id,
       username: user.username,
       email: user.email,
+      type: loginType === 'Regular' ? false : true
     });
   } catch (err) {
     console.error('DB error:', err);

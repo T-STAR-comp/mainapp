@@ -3,9 +3,9 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 
 router.put('/', async (req, res) => {
-  const { userName, email, currentPassword, newPassword } = req.body;
+  const { userName, email, currentPassword, newPassword, type } = req.body;
 
-  if (!userName || !email || !currentPassword || !newPassword) {
+  if (!userName || !email || !currentPassword || !newPassword || !type) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
@@ -24,8 +24,12 @@ router.put('/', async (req, res) => {
 
     const user = rows[0];
 
-    // Verify current password
-    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    let passwordMatch = false;
+    if (type === 'Admin') {
+      passwordMatch = await bcrypt.compare(currentPassword, user.admin_password);
+    } else {
+      passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    }
     if (!passwordMatch) {
       return res.status(200).json({ error: 'Current password is incorrect.' });
     }
@@ -35,10 +39,17 @@ router.put('/', async (req, res) => {
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
     // Update password
-    await db.execute(
-      'UPDATE transport_users SET password = ? WHERE username = ? AND email = ?',
-      [hashedNewPassword, userName, email]
-    );
+    if (type === 'Admin') {
+      await db.execute(
+        'UPDATE transport_users SET admin_password = ? WHERE username = ? AND email = ?',
+        [hashedNewPassword, userName, email]
+      );
+    } else {
+      await db.execute(
+        'UPDATE transport_users SET password = ? WHERE username = ? AND email = ?',
+        [hashedNewPassword, userName, email]
+      );
+    }
 
     return res.status(200).json({ message: 'Password updated successfully.' });
   } catch (err) {

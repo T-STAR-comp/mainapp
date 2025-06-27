@@ -6,9 +6,9 @@ const SALT_ROUNDS = 10;
 
 router.post('/', async (req, res) => {
   try {
-    const { userName, Email, Password, Type, Path } = req.body;
+    const { userName, Email, Password, Type, Path, admin_password } = req.body;
 
-    if (!userName || !Email || !Password) {
+    if (!userName || !Email || !Password || !admin_password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -26,12 +26,13 @@ router.post('/', async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(Password, SALT_ROUNDS);
+    const hashedadmin_password = await bcrypt.hash(admin_password, SALT_ROUNDS);
 
     // Insert new user
     const [result] = await db.execute(
-      `INSERT INTO transport_users (username, type, email, password, balance, path)
+      `INSERT INTO transport_users (username, type, email, password, balance, path, admin_password)
        VALUES (?, ?, ?, ?, 0, ?)`,
-      [userName, Type, Email, hashedPassword, Path]
+      [userName, Type, Email, hashedPassword, Path, hashedadmin_password]
     );
 
     return res.status(201).json({ message: 'User created successfully', userId: result.insertId });
@@ -42,3 +43,8 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+
+/*
+ALTER TABLE accounts
+ADD COLUMN admin_password VARCHAR(255) NULL;
+*/

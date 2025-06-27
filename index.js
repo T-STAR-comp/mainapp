@@ -109,6 +109,7 @@ app.use('/api/fetchticket/data', require('./Database/Transp_db_controllers/data/
 app.use('/api/getpdf/ticket', require('./Database/Transp_db_controllers/data/download.js'));
 app.use('/api/scanticket/verify', require('./Database/Transp_db_controllers/data/scandata.js'));
 //payments other
+app.use('/api/process/payout/banks', require('./Database/Transp_db_controllers/payments/payOutRouter.js'));
 app.use('/api/process/mobilepayment/airtel/tnm', require('./Database/Transp_db_controllers/payments/mobilePayment.js'));
 app.use('/api/processpayment/bank/direct', require('./Database/Transp_db_controllers/payments/bankPayment.js'));
 app.use('/api/generalpayment/processing', require('./Database/Transp_db_controllers/payments/generalPayment.js'));

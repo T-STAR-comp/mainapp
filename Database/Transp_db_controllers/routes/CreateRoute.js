@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  const { userName, from, to, departures, price } = req.body;
+  const { userName, from, to, departures, adult_price, minor_price } = req.body;
 
-  if (!userName || !from || !to || !departures || !price) {
+  if (!userName || !from || !to || !departures || !adult_price) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
@@ -18,9 +18,9 @@ router.post('/', async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      `INSERT INTO transport_Routes (userName, origin, destination, departures, price) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [userName, from, to, departuresJSON, price]
+      `INSERT INTO transport_Routes (userName, origin, destination, departures, adult_price, minor_price) 
+       VALUES (?, ?, ?, ?, ? ,?)`,
+      [userName, from, to, departuresJSON, adult_price, minor_price||0]
     );
 
     res.status(201).json({
@@ -34,3 +34,13 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+
+
+/**
+ * 
+ * ALTER TABLE routes
+  DROP COLUMN price,
+  ADD COLUMN adult_price DECIMAL(10,2) NULL,
+  ADD COLUMN minor_price DECIMAL(10,2) NULL;
+
+ */
