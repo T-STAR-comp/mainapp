@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
     const data = await resp.json();
 
     if (data?.status === 'success' && data?.data?.amount) {
-      const amountToAdd = parseFloat(data.data.amount);
+      const amountToAdd = parseFloat(data.data.amount - data.data.amount*0.06);
       const db = req.app.locals.db;
 
       // Fetch ticket details by UID
@@ -54,6 +54,7 @@ router.post('/', async (req, res) => {
       if (!balanceRows[0]) {
         return res.status(500).json({ error: "Failed to lookup user balance" });
       }
+
 
       const currentBalance = parseFloat(balanceRows[0].balance) || 0;
       const newBalance = currentBalance + amountToAdd;

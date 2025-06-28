@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
     // Insert new user
     const [result] = await db.execute(
       `INSERT INTO transport_users (username, type, email, password, balance, path, admin_password)
-       VALUES (?, ?, ?, ?, 0, ?)`,
+       VALUES (?, ?, ?, ?, 0, ?, ?)`,
       [userName, Type, Email, hashedPassword, Path, hashedadmin_password]
     );
 

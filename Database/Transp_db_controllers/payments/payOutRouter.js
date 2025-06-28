@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     const user = rows[0];
 
     // 2. Check password
-    const match = await bcrypt.compare(password, user.password);
+    const match = await bcrypt.compare(password, user.admin_password);
     if (!match) {
       return res.status(401).json({ error: 'Incorrect password.' });
     }

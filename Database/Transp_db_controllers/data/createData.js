@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
         seat_number: String(nextSeat),
         provider_username: cleanUsername
       }
-    });
+    })
   } catch (err) {
     console.error('❌ Error processing ticket sale:', err);
     return res.status(500).json({ error: 'Internal server error.' });

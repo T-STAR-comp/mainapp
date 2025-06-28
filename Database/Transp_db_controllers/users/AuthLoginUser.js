@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
       userId: user.id,
       username: user.username,
       email: user.email,
-      type: loginType === 'Regular' ? false : true
+      type: loginType === 'regular' ? false : true
     });
   } catch (err) {
     console.error('DB error:', err);
