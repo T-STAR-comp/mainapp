@@ -97,6 +97,8 @@ app.use('/api/login/user/transport', AuthLogibTransport);
 app.use('/api/fetchuser/routes', FetchRoutes);
 app.use('/api/user/createroute', CreateRoute);
 app.use('/api/changepass/user', ChangePass);
+app.use('/api/getallusers', require('./Database/Transp_db_controllers/users/getAllUsers.js'));
+app.use('/api/toggleusers', require('./Database/Transp_db_controllers/users/ToggleUserStatus.js'));
 app.use('/api/changestate/user', require('./Database/Transp_db_controllers/routes/ChangeState.js'));
 app.use('/api/updateprice/user', require('./Database/Transp_db_controllers/routes/ChangePrice.js'));
 app.use('/api/deleteroute/user', require('./Database/Transp_db_controllers/routes/DeleteRoute.js'));

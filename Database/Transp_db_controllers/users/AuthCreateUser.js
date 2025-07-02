@@ -45,6 +45,5 @@ router.post('/', async (req, res) => {
 module.exports = router;
 
 /*
-ALTER TABLE accounts
-ADD COLUMN admin_password VARCHAR(255) NULL;
+ALTER TABLE transport_users ADD COLUMN status ENUM('active', 'inactive') DEFAULT 'inactive';
 */

@@ -6,9 +6,8 @@ router.get('/', async (req, res) => {
 
   try {
     const [rows] = await db.execute(`
-      SELECT username, type, path
+      SELECT id, email, username, type, path, status
       FROM transport_users
-      WHERE status = 'active'
     `);
 
     res.status(200).json({ users: rows });
